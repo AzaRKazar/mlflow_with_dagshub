@@ -1,0 +1,38 @@
+name: Train and Deploy Model
+
+on:
+  push:
+    branches:
+      - main  # Runs when code is pushed to the main branch
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mlflow scikit-learn imbalanced-learn dvc dagshub
+
+      - name: Train Model and Log to MLflow
+        env:
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: python model.py
+
+      - name: Push Model to DagsHub
+        run: |
+          dvc add models/
+          git add models.dvc
+          git commit -m "Updated model version"
+          git push origin main
+          dvc push

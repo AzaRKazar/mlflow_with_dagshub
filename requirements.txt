@@ -1,0 +1,6 @@
+streamlit
+pandas
+mlflow
+dagshub
+scikit-learn
+joblib
